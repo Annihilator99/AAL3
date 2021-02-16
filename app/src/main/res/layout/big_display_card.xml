@@ -88,7 +88,7 @@
                 android:adjustViewBounds="false" />
 
             <TextView
-                android:id="@+id/bigDisplayCardTitle"
+                android:id="@+id/HC3Title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -99,10 +99,10 @@
                 android:textSize="30sp" />
 
             <TextView
-                android:id="@+id/bigDisplayCardDescription"
+                android:id="@+id/HC3Description"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/bigDisplayCardTitle"
+                android:layout_below="@id/HC3Title"
                 android:layout_margin="16dp"
                 android:fontFamily="sans-serif"
                 android:lineHeight="18sp"
@@ -110,10 +110,10 @@
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/bigDisplayCardButton"
+                android:id="@+id/HC3ActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/bigDisplayCardDescription"
+                android:layout_below="@id/HC3Description"
                 android:layout_margin="16dp"
                 android:padding="10dp"
                 android:text="Action"

@@ -1,18 +1,16 @@
 package com.example.aal3;
 
-import java.io.IOException;
-
 import okhttp3.Request;
 
 public class OkHttpRequest {
 
-    public Request getResponse() throws IOException {
+    private static final String BASE_URL = "https://run.mocky.io/v3/73be2d3d-7ad6-49be-aa84-7c759ca8de51";
+
+    public Request getResponse() {
 
         return new Request.Builder()
-                .url("https://run.mocky.io/v3/fefcfbeb-5c12-4722-94ad-b8f92caad1ad")
+                .url(BASE_URL)
                 .method("GET", null)
                 .build();
-
-
     }
 }

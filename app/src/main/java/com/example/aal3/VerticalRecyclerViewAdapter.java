@@ -2,7 +2,6 @@ package com.example.aal3;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +28,6 @@ public class VerticalRecyclerViewAdapter extends RecyclerView.Adapter<VerticalRe
         this.context = context;
         this.arrayList = arrayList;
         sharedpreferences = context.getSharedPreferences(CardPreferences, Context.MODE_PRIVATE);
-
     }
 
     @NonNull
@@ -46,10 +44,10 @@ public class VerticalRecyclerViewAdapter extends RecyclerView.Adapter<VerticalRe
         VerticalModel verticalModel = arrayList.get(position);
         String type = verticalModel.getDesignType();
         int height = verticalModel.getHeight();
-
         boolean is_scrollable = verticalModel.isIs_scrollable();
         ArrayList<HorizontalModel> singleItem = verticalModel.getCards();
 
+        // Removing Cards with "Dismiss Now" selected
         if (type.equals("HC3")) {
             Iterator<HorizontalModel> iterator = singleItem.iterator();
             while (iterator.hasNext()) {
@@ -60,31 +58,19 @@ public class VerticalRecyclerViewAdapter extends RecyclerView.Adapter<VerticalRe
 
         HorizontalRecyclerViewAdapter horizontalRecyclerViewAdapter = new HorizontalRecyclerViewAdapter(context, singleItem, type, height, is_scrollable);
 
-        if (is_scrollable == false && type.equals("HC1")) {
-
+        // Setting up adapter of Horizontal RecyclerView
+        // Handles  'is_scrollable' attribute
+        if (!is_scrollable && type.equals("HC1")) {
             final GridLayoutManager layoutManager = new GridLayoutManager(context, singleItem.size());
             holder.recyclerView.setLayoutManager(layoutManager);
             holder.recyclerView.setAdapter(horizontalRecyclerViewAdapter);
-
-            final int spacing = context.getResources().getDimensionPixelSize(R.dimen.recycler_spacing) / 2;
-
-            // apply spacing
-            holder.recyclerView.setPadding(spacing, spacing, spacing, spacing);
             holder.recyclerView.setClipToPadding(false);
             holder.recyclerView.setClipChildren(false);
-            holder.recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
-                @Override
-                public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-                    outRect.set(spacing, spacing, spacing, spacing);
-                }
-            });
         } else {
             holder.recyclerView.setHasFixedSize(true);
             holder.recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
             holder.recyclerView.setAdapter(horizontalRecyclerViewAdapter);
         }
-
-
     }
 
     @Override

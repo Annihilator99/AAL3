@@ -5,12 +5,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.transition.AutoTransition;
+import android.transition.TransitionManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -28,6 +29,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
 
@@ -37,7 +39,6 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     int cardHeight;
     boolean is_scrollable;
     public static final String CardPreferences = "CardPrefs";
-    RecyclerView.LayoutParams params;
     SharedPreferences sharedpreferences;
 
     public HorizontalRecyclerViewAdapter(Context context, ArrayList<HorizontalModel> arrayList, String type, int height, boolean is_scrollable) {
@@ -55,6 +56,7 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
 
+        // Different Layouts for different Cards
         switch (viewType) {
             case HorizontalModel.HC1:
                 view = LayoutInflater.from(parent.getContext()).inflate(R.layout.small_display_card, parent, false);
@@ -103,158 +105,161 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
         final HorizontalModel horizontalModel = arrayList.get(position);
 
+        // Different ViewHolders for different Cards
         if (horizontalModel != null) {
             switch (holder.getItemViewType()) {
                 case HorizontalModel.HC1:
                     HC1ViewHolder hc1ViewHolder = (HC1ViewHolder) holder;
-                    hc1ViewHolder.text.setText(horizontalModel.getTitle());
-                    String hc1ImgURL = null;
-                    hc1ImgURL = horizontalModel.getIcon().getImage_url();
-                    Picasso.with(context).load(hc1ImgURL).into(hc1ViewHolder.img);
+
+                    if (horizontalModel.getTitle() != null) {
+                        hc1ViewHolder.title.setText(horizontalModel.getTitle());
+                    }
+
+                    if (horizontalModel.getIcon().getImage_url() != null) {
+                        Picasso.with(context).load(Objects.requireNonNull(horizontalModel.getIcon().getImage_url())).into(hc1ViewHolder.img);
+                    }
 
                     break;
 
                 case HorizontalModel.HC3:
                     final HC3ViewHolder hc3ViewHolder = (HC3ViewHolder) holder;
 
-                    if (!sharedpreferences.getBoolean(horizontalModel.getName(), true)) {
-                        arrayList.remove(position);
-
-                        ((MainActivity) context).runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyDataSetChanged();
-                            }
-                        });
-                    }
-
+                    // Converts JsonArray to ArrayList of CTA
                     final ArrayList<CTA> cta = new Gson().fromJson(horizontalModel.getCta().toString(), new TypeToken<List<CTA>>() {
                     }.getType());
 
                     Log.d("cta", cta.get(0).getText());
 
+                    if (cta.get(0).getText() != null) {
+                        hc3ViewHolder.actionButton.setText(cta.get(0).getText());
+                    }
 
-                    hc3ViewHolder.button.setText(cta.get(0).getText());
-                    hc3ViewHolder.button.setTextColor(Color.parseColor(cta.get(0).getText_color()));
-                    hc3ViewHolder.button.setBackgroundColor(Color.parseColor(cta.get(0).getBg_color()));
-                    hc3ViewHolder.button.setOnClickListener(new View.OnClickListener() {
+                    if (cta.get(0).getText_color() != null) {
+                        hc3ViewHolder.actionButton.setTextColor(Color.parseColor(cta.get(0).getText_color()));
+                    }
+
+                    if (cta.get(0).getBg_color() != null) {
+                        hc3ViewHolder.actionButton.setBackgroundColor(Color.parseColor(cta.get(0).getBg_color()));
+                    }
+
+                    if (horizontalModel.getTitle() != null) {
+                        hc3ViewHolder.title.setText(horizontalModel.getTitle());
+                    }
+
+                    if (horizontalModel.getDescription() != null) {
+                        hc3ViewHolder.description.setText(horizontalModel.getDescription());
+                    }
+
+                    hc3ViewHolder.sideView.setVisibility(View.GONE);
+
+                    // Action Button ClickListener
+                    hc3ViewHolder.actionButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            openURL(cta.get(0).getAction_url());
+                            if (cta.get(0).getAction_url() != null) {
+                                openURL(cta.get(0).getAction_url());
+                            }
                         }
                     });
 
-                    hc3ViewHolder.title.setText(horizontalModel.getTitle());
-                    hc3ViewHolder.description.setText(horizontalModel.getDescription());
-                    hc3ViewHolder.LL.setVisibility(View.GONE);
 
-                    // Long Press
+                    // Long Press Click Listener of Big Display card
                     hc3ViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View view) {
-                            TranslateAnimation animate = new TranslateAnimation(
-                                    0,                 // fromXDelta
-                                    hc3ViewHolder.LL.getWidth(),                 // toXDelta
-                                    0,  // fromYDelta
-                                    0);                // toYDelta
-                            animate.setDuration(500);
-                            animate.setFillAfter(true);
-                            hc3ViewHolder.LL.startAnimation(animate);
-                            hc3ViewHolder.LL.setVisibility(View.VISIBLE);
+                            // Slide Transition
+                            TransitionManager.beginDelayedTransition(hc3ViewHolder.sideView,
+                                    new AutoTransition());
+                            hc3ViewHolder.sideView.setVisibility(View.VISIBLE);
 
-                            hc3ViewHolder.dismissLL.setOnClickListener(new View.OnClickListener() {
+                            // Dismiss Now Click Listener
+                            hc3ViewHolder.dismissLinearLayout.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
 
-
+                                    // Stores info in Shared Preferences
                                     SharedPreferences.Editor editor = sharedpreferences.edit();
-
                                     editor.putBoolean(horizontalModel.getName(), false);
                                     editor.apply();
+
                                     arrayList.remove(position);
                                     notifyDataSetChanged();
-
                                 }
                             });
 
-                            hc3ViewHolder.remindLL.setOnClickListener(new View.OnClickListener() {
+
+                            // Remind Later Click Listener
+                            hc3ViewHolder.remindLinearLayout.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     arrayList.remove(position);
                                     notifyDataSetChanged();
                                 }
                             });
-
-
-                            setButtonClicks();
-
                             return true;
                         }
-
                     });
 
+                    if (horizontalModel.getBg_image() != null && horizontalModel.getBg_image().getAspect_ratio() != null) {
 
-                    String hc3ImgURL = null;
-                    if (horizontalModel.getBg_image() != null) {
-                        hc3ImgURL = horizontalModel.getBg_image().getImage_url();
+                        // Setting Dimensions of Image using 'aspect_ratio'
+                        DisplayMetrics displayMetrics = new DisplayMetrics();
+                        ((MainActivity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                        int w = displayMetrics.widthPixels - (int) (20 * context.getResources().getDisplayMetrics().density);
+                        int l = (int) (w / (Double.parseDouble(horizontalModel.getBg_image().getAspect_ratio())));
+                        Picasso.with(context).load(horizontalModel.getBg_image().getImage_url()).resize(w, l).into(hc3ViewHolder.img);
                     }
-
-
-                    // Setting Dimensions of Image
-                    DisplayMetrics displayMetrics = new DisplayMetrics();
-                    ((MainActivity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                    int w = displayMetrics.widthPixels - (int) (20 * context.getResources().getDisplayMetrics().density);
-                    int l = (int) (w / (Double.parseDouble(horizontalModel.getBg_image().getAspect_ratio())));
-                    Picasso.with(context).load(hc3ImgURL).resize(w, l).into(hc3ViewHolder.img);
-
 
                     break;
 
                 case HorizontalModel.HC5:
                     HC5ViewHolder hc5ViewHolder = (HC5ViewHolder) holder;
-                    Log.d("image data ", horizontalModel.getBg_image().toString());
-                    String hc5ImgURL = null;
-                    hc5ImgURL = horizontalModel.getBg_image().getImage_url();
-                    Picasso.with(context).load(hc5ImgURL).into(hc5ViewHolder.img);
+
+                    if (horizontalModel.getBg_image().getImage_url() != null) {
+                        Picasso.with(context).load(horizontalModel.getBg_image().getImage_url()).into(hc5ViewHolder.img);
+                    }
+
                     break;
 
                 case HorizontalModel.HC6:
                     HC6ViewHolder hc6ViewHolder = (HC6ViewHolder) holder;
-                    hc6ViewHolder.text.setText(horizontalModel.getTitle());
-                    String hc6ImgURL = null;
-                    hc6ImgURL = horizontalModel.getIcon().getImage_url();
-                    Picasso.with(context).load(hc6ImgURL).into(hc6ViewHolder.img);
+
+                    if (horizontalModel.getTitle() != null) {
+                        hc6ViewHolder.text.setText(horizontalModel.getTitle());
+                    }
+
+                    if (horizontalModel.getIcon().getImage_url() != null) {
+                        Picasso.with(context).load(horizontalModel.getIcon().getImage_url()).into(hc6ViewHolder.img);
+                    }
                     break;
 
                 case HorizontalModel.HC9:
                     HC9ViewHolder hc9ViewHolder = (HC9ViewHolder) holder;
 
-                    String hc9ImgURL = null;
-                    hc9ImgURL = horizontalModel.getBg_image().getImage_url();
-                    hc9ViewHolder.img.getLayoutParams().height = (int) (cardHeight * (context.getResources().getDisplayMetrics().density));
-                    Picasso.with(context).load(hc9ImgURL).into(hc9ViewHolder.img);
+                    if (horizontalModel.getBg_image().getImage_url() != null && horizontalModel.getBg_image().getAspect_ratio() != null) {
+                        // Setting Dimensions of Image using 'aspect_ratio
+                        int l = (int) (cardHeight * (context.getResources().getDisplayMetrics().density));
+                        int w = (int) (l * (Double.parseDouble(horizontalModel.getBg_image().getAspect_ratio())));
+                        Picasso.with(context).load(horizontalModel.getBg_image().getImage_url()).resize(w, l).into(hc9ViewHolder.img);
+                    }
 
                     break;
             }
-        }
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (horizontalModel.getUrl() != null) {
-                    openURL(horizontalModel.getUrl());
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (horizontalModel.getUrl() != null) {
+                        openURL(horizontalModel.getUrl());
+                    }
                 }
-            }
-        });
-
+            });
+        }
     }
 
-    private void setButtonClicks() {
 
-    }
-
+    // Function to open URL onCLick
     private void openURL(String url) {
-        Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
+        Uri uri = Uri.parse(url);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         context.startActivity(intent);
     }
@@ -264,47 +269,47 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
         return arrayList.size();
     }
 
-    public class HC1ViewHolder extends RecyclerView.ViewHolder {
+    public static class HC1ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView text;
+        TextView title;
         ImageView img;
         CardView cardView;
 
         public HC1ViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.text = itemView.findViewById(R.id.smallDisplayCardTitle);
-            this.img = itemView.findViewById(R.id.smallDisplayCardIcon);
+            this.title = itemView.findViewById(R.id.HC1Title);
+            this.img = itemView.findViewById(R.id.HC1Icon);
             this.cardView = itemView.findViewById(R.id.HC1CardView);
         }
     }
 
-    public class HC3ViewHolder extends RecyclerView.ViewHolder {
+    public static class HC3ViewHolder extends RecyclerView.ViewHolder {
 
         TextView title;
         TextView description;
         ImageView img;
-        LinearLayout LL;
+        LinearLayout sideView;
         CardView cardView;
-        LinearLayout remindLL;
-        LinearLayout dismissLL;
+        LinearLayout remindLinearLayout;
+        LinearLayout dismissLinearLayout;
 
-        Button button;
+        Button actionButton;
 
         public HC3ViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.title = itemView.findViewById(R.id.bigDisplayCardTitle);
-            this.description = itemView.findViewById(R.id.bigDisplayCardDescription);
+            this.title = itemView.findViewById(R.id.HC3Title);
+            this.description = itemView.findViewById(R.id.HC3Description);
             this.img = itemView.findViewById(R.id.HC3Image);
-            this.button = itemView.findViewById(R.id.bigDisplayCardButton);
-            this.LL = itemView.findViewById(R.id.HC3SideView);
+            this.actionButton = itemView.findViewById(R.id.HC3ActionButton);
+            this.sideView = itemView.findViewById(R.id.HC3SideView);
             this.cardView = itemView.findViewById(R.id.HC3CardView);
-            this.remindLL = itemView.findViewById(R.id.remindLaterLL);
-            this.dismissLL = itemView.findViewById(R.id.dismissLL);
+            this.remindLinearLayout = itemView.findViewById(R.id.remindLaterLL);
+            this.dismissLinearLayout = itemView.findViewById(R.id.dismissLL);
 
         }
     }
 
-    public class HC5ViewHolder extends RecyclerView.ViewHolder {
+    public static class HC5ViewHolder extends RecyclerView.ViewHolder {
 
 
         ImageView img;
@@ -315,7 +320,7 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public class HC6ViewHolder extends RecyclerView.ViewHolder {
+    public static class HC6ViewHolder extends RecyclerView.ViewHolder {
 
         TextView text;
         ImageView img;
@@ -327,7 +332,7 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public class HC9ViewHolder extends RecyclerView.ViewHolder {
+    public static class HC9ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView img;
 
@@ -337,20 +342,4 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
 
         }
     }
-
-//    public class HorizontalRVViewHolder extends RecyclerView.ViewHolder {
-//
-//        TextView textViewTitle;
-//        ImageView imageView;
-//
-//
-//        public HorizontalRVViewHolder(@NonNull View itemView) {
-//            super(itemView);
-//            textViewTitle = itemView.findViewById(R.id.txtTitle2);
-//            imageView = itemView.findViewById(R.id.image);
-//        }
-//
-//    }
-
-
 }

@@ -111,12 +111,6 @@ public class HorizontalModel {
         this.bg_color = bg_color;
     }
 
-    //    public HorizontalModel(String name, String imgurl) {
-//        this.name = name;
-//        this.imgurl = imgurl;
-//    }
-
-
     public String getName() {
         return name;
     }

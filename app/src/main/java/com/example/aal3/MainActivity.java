@@ -3,6 +3,7 @@ package com.example.aal3;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,9 +30,9 @@ import okhttp3.Request;
 public class MainActivity extends AppCompatActivity {
 
 
-    VerticalRecyclerViewAdapter adapter;
-    SwipeRefreshLayout swipeRefreshLayout;
-    ProgressDialog progressDialog;
+    private VerticalRecyclerViewAdapter adapter;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private ProgressDialog progressDialog;
     private RecyclerView verticalRecyclerView;
 
     @Override
@@ -60,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
                     e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "API Call Failed", Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
@@ -94,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Toast.makeText(MainActivity.this, "JSONException", Toast.LENGTH_SHORT).show();
                         }
                     }
 
@@ -102,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             });
         } catch (IOException e) {
             e.printStackTrace();
+            Toast.makeText(MainActivity.this, "IOException", Toast.LENGTH_SHORT).show();
         }
     }
 }
