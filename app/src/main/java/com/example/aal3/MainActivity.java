@@ -21,11 +21,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
 public class MainActivity extends AppCompatActivity {
+
 
     VerticalRecyclerViewAdapter adapter;
     SwipeRefreshLayout swipeRefreshLayout;
@@ -40,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage("Loading...");
         progressDialog.show();
+
         verticalRecyclerView = findViewById(R.id.verticalRecyclerView);
         verticalRecyclerView.setHasFixedSize(true);
         verticalRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -49,9 +52,9 @@ public class MainActivity extends AppCompatActivity {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
 
-        OkHttpRequest apiCall = new OkHttpRequest();
+        OkHttpRequest APICall = new OkHttpRequest();
         try {
-            Request request = apiCall.getResponse();
+            Request request = APICall.getResponse();
 
             client.newCall(request).enqueue(new okhttp3.Callback() {
                 @Override
@@ -61,13 +64,14 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-                    if (response.message().equals("OK") && response.body() != null) {
+                    if (response.message().equals("OK")) {
                         try {
-                            JSONObject jsonObject = new JSONObject(response.body().string());
+                            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
                             Log.d("Response received -", jsonObject.toString());
 
                             JSONArray cardGroupsArray = jsonObject.getJSONArray("card_groups");
 
+                            // Converting JSONArray to ArrayList
                             ArrayList<VerticalModel> verticalList = new Gson().fromJson(String.valueOf(cardGroupsArray), new TypeToken<List<VerticalModel>>() {
                             }.getType());
 

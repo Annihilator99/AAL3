@@ -2,14 +2,18 @@ package com.example.aal3;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -32,6 +36,9 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     String type;
     int cardHeight;
     boolean is_scrollable;
+    public static final String CardPreferences = "CardPrefs";
+    RecyclerView.LayoutParams params;
+    SharedPreferences sharedpreferences;
 
     public HorizontalRecyclerViewAdapter(Context context, ArrayList<HorizontalModel> arrayList, String type, int height, boolean is_scrollable) {
         this.context = context;
@@ -39,6 +46,8 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
         this.type = type;
         this.cardHeight = height;
         this.is_scrollable = is_scrollable;
+        sharedpreferences = context.getSharedPreferences(CardPreferences, Context.MODE_PRIVATE);
+
     }
 
     @NonNull
@@ -91,7 +100,7 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
         final HorizontalModel horizontalModel = arrayList.get(position);
 
         if (horizontalModel != null) {
@@ -106,10 +115,19 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                     break;
 
                 case HorizontalModel.HC3:
-                    HC3ViewHolder hc3ViewHolder = (HC3ViewHolder) holder;
+                    final HC3ViewHolder hc3ViewHolder = (HC3ViewHolder) holder;
 
-//                    final Gson gson= new Gson();
-//                    final CTA cta = gson.fromJson(horizontalModel.getCta().getAsJsonObject().toString(),CTA.class);
+                    if (!sharedpreferences.getBoolean(horizontalModel.getName(), true)) {
+                        arrayList.remove(position);
+
+                        ((MainActivity) context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyDataSetChanged();
+                            }
+                        });
+                    }
+
                     final ArrayList<CTA> cta = new Gson().fromJson(horizontalModel.getCta().toString(), new TypeToken<List<CTA>>() {
                     }.getType());
 
@@ -122,21 +140,73 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                     hc3ViewHolder.button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-
-
                             openURL(cta.get(0).getAction_url());
                         }
                     });
 
                     hc3ViewHolder.title.setText(horizontalModel.getTitle());
                     hc3ViewHolder.description.setText(horizontalModel.getDescription());
+                    hc3ViewHolder.LL.setVisibility(View.GONE);
+
+                    // Long Press
+                    hc3ViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            TranslateAnimation animate = new TranslateAnimation(
+                                    0,                 // fromXDelta
+                                    hc3ViewHolder.LL.getWidth(),                 // toXDelta
+                                    0,  // fromYDelta
+                                    0);                // toYDelta
+                            animate.setDuration(500);
+                            animate.setFillAfter(true);
+                            hc3ViewHolder.LL.startAnimation(animate);
+                            hc3ViewHolder.LL.setVisibility(View.VISIBLE);
+
+                            hc3ViewHolder.dismissLL.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+
+
+                                    SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                                    editor.putBoolean(horizontalModel.getName(), false);
+                                    editor.apply();
+                                    arrayList.remove(position);
+                                    notifyDataSetChanged();
+
+                                }
+                            });
+
+                            hc3ViewHolder.remindLL.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    arrayList.remove(position);
+                                    notifyDataSetChanged();
+                                }
+                            });
+
+
+                            setButtonClicks();
+
+                            return true;
+                        }
+
+                    });
+
 
                     String hc3ImgURL = null;
-                    if (horizontalModel.getIcon() != null) {
-                        hc3ImgURL = horizontalModel.getIcon().getImage_url();
+                    if (horizontalModel.getBg_image() != null) {
+                        hc3ImgURL = horizontalModel.getBg_image().getImage_url();
                     }
 
-                    Picasso.with(context).load(hc3ImgURL).into(hc3ViewHolder.img);
+
+                    // Setting Dimensions of Image
+                    DisplayMetrics displayMetrics = new DisplayMetrics();
+                    ((MainActivity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                    int w = displayMetrics.widthPixels - (int) (20 * context.getResources().getDisplayMetrics().density);
+                    int l = (int) (w / (Double.parseDouble(horizontalModel.getBg_image().getAspect_ratio())));
+                    Picasso.with(context).load(hc3ImgURL).resize(w, l).into(hc3ViewHolder.img);
+
 
                     break;
 
@@ -179,6 +249,10 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
 
     }
 
+    private void setButtonClicks() {
+
+    }
+
     private void openURL(String url) {
         Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
@@ -209,6 +283,10 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
         TextView title;
         TextView description;
         ImageView img;
+        LinearLayout LL;
+        CardView cardView;
+        LinearLayout remindLL;
+        LinearLayout dismissLL;
 
         Button button;
 
@@ -218,6 +296,10 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
             this.description = itemView.findViewById(R.id.bigDisplayCardDescription);
             this.img = itemView.findViewById(R.id.HC3Image);
             this.button = itemView.findViewById(R.id.bigDisplayCardButton);
+            this.LL = itemView.findViewById(R.id.HC3SideView);
+            this.cardView = itemView.findViewById(R.id.HC3CardView);
+            this.remindLL = itemView.findViewById(R.id.remindLaterLL);
+            this.dismissLL = itemView.findViewById(R.id.dismissLL);
 
         }
     }

@@ -1,6 +1,7 @@
 package com.example.aal3;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,15 +16,19 @@ import com.example.aal3.Models.HorizontalModel;
 import com.example.aal3.Models.VerticalModel;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class VerticalRecyclerViewAdapter extends RecyclerView.Adapter<VerticalRecyclerViewAdapter.VerticalRVViewHolder> {
 
     Context context;
     ArrayList<VerticalModel> arrayList;
+    public static final String CardPreferences = "CardPrefs";
+    SharedPreferences sharedpreferences;
 
     public VerticalRecyclerViewAdapter(Context context, ArrayList<VerticalModel> arrayList) {
         this.context = context;
         this.arrayList = arrayList;
+        sharedpreferences = context.getSharedPreferences(CardPreferences, Context.MODE_PRIVATE);
 
     }
 
@@ -44,9 +49,18 @@ public class VerticalRecyclerViewAdapter extends RecyclerView.Adapter<VerticalRe
 
         boolean is_scrollable = verticalModel.isIs_scrollable();
         ArrayList<HorizontalModel> singleItem = verticalModel.getCards();
+
+        if (type.equals("HC3")) {
+            Iterator<HorizontalModel> iterator = singleItem.iterator();
+            while (iterator.hasNext()) {
+                HorizontalModel p = iterator.next();
+                if (!sharedpreferences.getBoolean(p.getName(), true)) iterator.remove();
+            }
+        }
+
         HorizontalRecyclerViewAdapter horizontalRecyclerViewAdapter = new HorizontalRecyclerViewAdapter(context, singleItem, type, height, is_scrollable);
 
-        if (is_scrollable == false) {
+        if (is_scrollable == false && type.equals("HC1")) {
 
             final GridLayoutManager layoutManager = new GridLayoutManager(context, singleItem.size());
             holder.recyclerView.setLayoutManager(layoutManager);

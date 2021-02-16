@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    app:cardCornerRadius="10dp"
+    app:cardCornerRadius="12dp"
     app:cardUseCompatPadding="true">
 
     <LinearLayout
@@ -26,7 +26,9 @@
             android:layout_marginStart="16dp"
             android:autoSizeTextType="uniform"
             android:text="Title"
-            android:textStyle="bold" />
+            android:fontFamily="sans-serif-medium"
+            android:lineHeight="16sp"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
