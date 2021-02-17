@@ -4,7 +4,7 @@ import okhttp3.Request;
 
 public class OkHttpRequest {
 
-    private static final String BASE_URL = "https://run.mocky.io/v3/73be2d3d-7ad6-49be-aa84-7c759ca8de51";
+    private static final String BASE_URL = "https://run.mocky.io/v3/fefcfbeb-5c12-4722-94ad-b8f92caad1ad";
 
     public Request getResponse() {
 

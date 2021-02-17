@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AAL3</string>
+    <string name="remind_later">Remind Later</string>
+    <string name="dismiss_now">Dismiss Now</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="action">Action</string>
 </resources>

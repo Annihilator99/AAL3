@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,6 +41,7 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     boolean is_scrollable;
     public static final String CardPreferences = "CardPrefs";
     SharedPreferences sharedpreferences;
+    public static boolean IS_SIDEVIEW_VISIBLE = false;
 
     public HorizontalRecyclerViewAdapter(Context context, ArrayList<HorizontalModel> arrayList, String type, int height, boolean is_scrollable) {
         this.context = context;
@@ -96,9 +98,9 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                 return HorizontalModel.HC6;
             case "HC9":
                 return HorizontalModel.HC9;
+            default:
+                return -1;
         }
-
-        return -1;
     }
 
     @Override
@@ -118,6 +120,15 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                     if (horizontalModel.getIcon().getImage_url() != null) {
                         Picasso.with(context).load(Objects.requireNonNull(horizontalModel.getIcon().getImage_url())).into(hc1ViewHolder.img);
                     }
+
+                    hc1ViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (horizontalModel.getUrl() != null) {
+                                openURL(horizontalModel.getUrl());
+                            }
+                        }
+                    });
 
                     break;
 
@@ -164,13 +175,16 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
 
 
                     // Long Press Click Listener of Big Display card
-                    hc3ViewHolder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    hc3ViewHolder.actionRelativeLayout.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View view) {
-                            // Slide Transition
-                            TransitionManager.beginDelayedTransition(hc3ViewHolder.sideView,
-                                    new AutoTransition());
-                            hc3ViewHolder.sideView.setVisibility(View.VISIBLE);
+                            if (!IS_SIDEVIEW_VISIBLE) {
+                                // Slide Transition
+                                TransitionManager.beginDelayedTransition(hc3ViewHolder.sideView,
+                                        new AutoTransition());
+                                hc3ViewHolder.sideView.setVisibility(View.VISIBLE);
+                                IS_SIDEVIEW_VISIBLE = true;
+                            }
 
                             // Dismiss Now Click Listener
                             hc3ViewHolder.dismissLinearLayout.setOnClickListener(new View.OnClickListener() {
@@ -200,6 +214,20 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                         }
                     });
 
+                    hc3ViewHolder.actionRelativeLayout.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (IS_SIDEVIEW_VISIBLE) {
+                                TransitionManager.beginDelayedTransition(hc3ViewHolder.sideView,
+                                        new AutoTransition());
+                                hc3ViewHolder.sideView.setVisibility(View.GONE);
+                                IS_SIDEVIEW_VISIBLE = false;
+                            } else if (horizontalModel.getUrl() != null) {
+                                openURL(horizontalModel.getUrl());
+                            }
+                        }
+                    });
+
                     if (horizontalModel.getBg_image() != null && horizontalModel.getBg_image().getAspect_ratio() != null) {
 
                         // Setting Dimensions of Image using 'aspect_ratio'
@@ -219,6 +247,15 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                         Picasso.with(context).load(horizontalModel.getBg_image().getImage_url()).into(hc5ViewHolder.img);
                     }
 
+                    hc5ViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (horizontalModel.getUrl() != null) {
+                                openURL(horizontalModel.getUrl());
+                            }
+                        }
+                    });
+
                     break;
 
                 case HorizontalModel.HC6:
@@ -231,6 +268,16 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                     if (horizontalModel.getIcon().getImage_url() != null) {
                         Picasso.with(context).load(horizontalModel.getIcon().getImage_url()).into(hc6ViewHolder.img);
                     }
+
+                    hc6ViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (horizontalModel.getUrl() != null) {
+                                openURL(horizontalModel.getUrl());
+                            }
+                        }
+                    });
+
                     break;
 
                 case HorizontalModel.HC9:
@@ -243,19 +290,19 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
                         Picasso.with(context).load(horizontalModel.getBg_image().getImage_url()).resize(w, l).into(hc9ViewHolder.img);
                     }
 
+                    hc9ViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if (horizontalModel.getUrl() != null) {
+                                openURL(horizontalModel.getUrl());
+                            }
+                        }
+                    });
+
                     break;
             }
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (horizontalModel.getUrl() != null) {
-                        openURL(horizontalModel.getUrl());
-                    }
-                }
-            });
         }
     }
-
 
     // Function to open URL onCLick
     private void openURL(String url) {
@@ -270,7 +317,6 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
     public static class HC1ViewHolder extends RecyclerView.ViewHolder {
-
         TextView title;
         ImageView img;
         CardView cardView;
@@ -284,14 +330,13 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
     public static class HC3ViewHolder extends RecyclerView.ViewHolder {
-
         TextView title;
         TextView description;
         ImageView img;
         LinearLayout sideView;
-        CardView cardView;
         LinearLayout remindLinearLayout;
         LinearLayout dismissLinearLayout;
+        RelativeLayout actionRelativeLayout;
 
         Button actionButton;
 
@@ -302,16 +347,14 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
             this.img = itemView.findViewById(R.id.HC3Image);
             this.actionButton = itemView.findViewById(R.id.HC3ActionButton);
             this.sideView = itemView.findViewById(R.id.HC3SideView);
-            this.cardView = itemView.findViewById(R.id.HC3CardView);
             this.remindLinearLayout = itemView.findViewById(R.id.remindLaterLL);
             this.dismissLinearLayout = itemView.findViewById(R.id.dismissLL);
+            this.actionRelativeLayout = itemView.findViewById(R.id.actionRelativeLayout);
 
         }
     }
 
     public static class HC5ViewHolder extends RecyclerView.ViewHolder {
-
-
         ImageView img;
 
         public HC5ViewHolder(@NonNull View itemView) {
@@ -321,7 +364,6 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
     public static class HC6ViewHolder extends RecyclerView.ViewHolder {
-
         TextView text;
         ImageView img;
 
@@ -333,7 +375,6 @@ public class HorizontalRecyclerViewAdapter extends RecyclerView.Adapter {
     }
 
     public static class HC9ViewHolder extends RecyclerView.ViewHolder {
-
         ImageView img;
 
         public HC9ViewHolder(@NonNull View itemView) {

@@ -48,64 +48,64 @@ public class MainActivity extends AppCompatActivity {
         verticalRecyclerView.setHasFixedSize(true);
         verticalRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
+        APICall();
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.setRefreshing(false);
+                APICall();
+                adapter.notifyDataSetChanged();
+            }
+        });
+    }
+
+    private void APICall() {
         // API Call
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
 
         OkHttpRequest APICall = new OkHttpRequest();
-        try {
-            Request request = APICall.getResponse();
+        Request request = APICall.getResponse();
 
-            client.newCall(request).enqueue(new okhttp3.Callback() {
-                @Override
-                public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "API Call Failed", Toast.LENGTH_SHORT).show();
-                }
+        client.newCall(request).enqueue(new okhttp3.Callback() {
+            @Override
+            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
+                e.printStackTrace();
+                Toast.makeText(MainActivity.this, "API Call Failed", Toast.LENGTH_SHORT).show();
+            }
 
-                @Override
-                public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-                    if (response.message().equals("OK")) {
-                        try {
-                            JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
-                            Log.d("Response received -", jsonObject.toString());
+            @Override
+            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+                if (response.message().equals("OK")) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(Objects.requireNonNull(response.body()).string());
+                        Log.d("Response received -", jsonObject.toString());
 
-                            JSONArray cardGroupsArray = jsonObject.getJSONArray("card_groups");
+                        JSONArray cardGroupsArray = jsonObject.getJSONArray("card_groups");
 
-                            // Converting JSONArray to ArrayList
-                            ArrayList<VerticalModel> verticalList = new Gson().fromJson(String.valueOf(cardGroupsArray), new TypeToken<List<VerticalModel>>() {
-                            }.getType());
+                        // Converting JSONArray to ArrayList
+                        ArrayList<VerticalModel> verticalList = new Gson().fromJson(String.valueOf(cardGroupsArray), new TypeToken<List<VerticalModel>>() {
+                        }.getType());
 
-                            // Setting the Adapter and SwipeRefresh
-                            adapter = new VerticalRecyclerViewAdapter(MainActivity.this, verticalList);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    progressDialog.dismiss();
-                                    verticalRecyclerView.setAdapter(adapter);
-                                    swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-                                        @Override
-                                        public void onRefresh() {
-                                            swipeRefreshLayout.setRefreshing(false);
-                                            adapter.notifyDataSetChanged();
-                                        }
-                                    });
-                                }
-                            });
+                        // Setting the Adapter and SwipeRefresh
+                        adapter = new VerticalRecyclerViewAdapter(MainActivity.this, verticalList);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressDialog.dismiss();
+                                verticalRecyclerView.setAdapter(adapter);
+                            }
+                        });
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(MainActivity.this, "JSONException", Toast.LENGTH_SHORT).show();
-                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(MainActivity.this, "JSONException", Toast.LENGTH_SHORT).show();
                     }
-
-
                 }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(MainActivity.this, "IOException", Toast.LENGTH_SHORT).show();
-        }
+            }
+        });
     }
 }

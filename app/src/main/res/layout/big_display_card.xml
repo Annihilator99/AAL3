@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/HC3CardView"
     android:layout_width="wrap_content"
     android:orientation="horizontal"
     android:layout_height="match_parent"
@@ -17,7 +16,6 @@
             android:id="@+id/HC3SideView"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_centerVertical="true"
             android:gravity="center"
             android:orientation="vertical">
 
@@ -29,7 +27,7 @@
                 android:background="@drawable/rounded_background"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="10dp">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -39,8 +37,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Remind Later" />
+                    android:layout_marginTop="8dp"
+                    android:text="@string/remind_later" />
 
             </LinearLayout>
 
@@ -53,7 +51,7 @@
                 android:background="@drawable/rounded_background"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="10dp">
 
                 <ImageView
 
@@ -64,8 +62,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Dismiss Now" />
+                    android:layout_marginTop="8dp"
+                    android:text="@string/dismiss_now" />
 
             </LinearLayout>
 
@@ -73,9 +71,8 @@
         </LinearLayout>
 
         <RelativeLayout
-            android:id="@+id/HC3RL"
+            android:id="@+id/actionRelativeLayout"
             android:layout_width="wrap_content"
-            android:layout_toEndOf="@id/HC3SideView"
             android:layout_height="match_parent"
             android:clipChildren="true"
             android:orientation="vertical">
@@ -95,7 +92,7 @@
                 android:layout_margin="16dp"
                 android:fontFamily="sans-serif-medium"
                 android:lineHeight="35sp"
-                android:text="Title"
+                android:text="@string/title"
                 android:textSize="30sp" />
 
             <TextView
@@ -106,7 +103,7 @@
                 android:layout_margin="16dp"
                 android:fontFamily="sans-serif"
                 android:lineHeight="18sp"
-                android:text="Description"
+                android:text="@string/description"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton
@@ -116,7 +113,7 @@
                 android:layout_below="@id/HC3Description"
                 android:layout_margin="16dp"
                 android:padding="10dp"
-                android:text="Action"
+                android:text="@string/action"
                 android:textAllCaps="false"
                 app:cornerRadius="10dp" />
 
